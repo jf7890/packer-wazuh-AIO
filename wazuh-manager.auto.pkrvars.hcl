@@ -1,23 +1,27 @@
-# Auto-loaded vars for packer (no need to pass -var-file)
-# NOTE: Replace placeholders before running `packer build`.
+# ===== Proxmox connection =====
+proxmox_url      = "https://10.10.100.1:8006/api2/json"
+proxmox_username = "root@pam!packer"
+proxmox_token    = "REPLACE_ME_TOKEN_SECRET"
+proxmox_node     = "homelab"
+proxmox_insecure_skip_tls_verify = true
+vm_id = 0
 
-# --- Proxmox connection ---
-proxmox_url      = "https://PVE_HOST:8006/api2/json"
-proxmox_username = "root@pam"        # or: "user@pam!tokenid" if you use API token auth
-proxmox_token    = "YOUR_TOKEN_SECRET" # token secret (NOT token id)
-proxmox_node     = "pve"
+# ===== Template naming =====
+template_prefix = "tpl"
+hostname        = "wazuh-manager"
 
-# --- Proxmox resources ---
-iso_storage_pool = "local"
-vm_storage_pool  = "local-lvm"
-vm_bridge        = "vmbr0"
+# ===== VM sizing (default: 4c/8g/40g) =====
+cpu_cores = 4
+memory_mb = 8192
+disk_storage_pool = "hdd-lvm"
+disk_size         = "40G"
 
-# --- VM sizing (defaults) ---
-vm_cores     = 4
-vm_memory    = 8192
-vm_disk_size = "40G"
+# ===== Storage / Network =====
+iso_storage_pool        = "hdd-data"
+mgmt_bridge             = "vmbr10"
+cloud_init_storage_pool = "local-lvm"
 
-# --- SSH (packer communicator) ---
-# IMPORTANT: Point to the PRIVATE KEY FILE that matches the authorized public key
-# embedded in autoinstall (your provided ed25519 key).
-ssh_private_key_file = "/path/to/your/private_key"
+# ===== SSH key-based =====
+ssh_username         = "blue"
+ssh_private_key_file = "~/.ssh/id_ed25519"
+vm_interface         = "ens18"

@@ -1,91 +1,117 @@
+variable "template_prefix" {
+  type        = string
+  default     = "tpl"
+  description = "Prefix tên template."
+}
+
+variable "hostname" {
+  type        = string
+  default     = "wazuh-manager"
+  description = "Hostname (cũng dùng để ghép tên template)."
+}
+
 variable "proxmox_url" {
   type        = string
   description = "Proxmox API URL, e.g. https://pve:8006/api2/json"
 }
+
 variable "proxmox_username" {
   type        = string
-  description = "Proxmox username, including realm. If using API token auth, include token id like user@pam!tokenid"
+  description = "Proxmox username incl. realm. For token auth: user@realm!tokenid"
 }
+
 variable "proxmox_token" {
   type        = string
-  description = "Proxmox API token secret"
   sensitive   = true
+  description = "Proxmox API token secret (NOT the token id)."
 }
+
 variable "proxmox_node" {
   type        = string
-  description = "Target Proxmox node name"
+  description = "Proxmox node name to build on."
 }
-variable "proxmox_insecure" {
+
+variable "proxmox_insecure_skip_tls_verify" {
   type        = bool
   default     = true
-  description = "Skip TLS verification (dev/lab only)"
+  description = "Skip TLS verify for Proxmox API."
 }
 
-variable "template_prefix" {
-  type        = string
-  default     = "cr"
-  description = "Prefix for template name"
-}
-variable "hostname" {
-  type        = string
-  default     = "wazuh-manager"
-  description = "Hostname inside the VM and template name suffix"
-}
-variable "template_tags" {
-  type        = string
-  default     = "cyber-range,wazuh"
-  description = "Proxmox tags"
+variable "vm_id" {
+  type        = number
+  default     = 0
+  description = "Optional fixed VMID. Set 0 to auto-assign."
 }
 
-# ISO settings (Ubuntu 24.04.3 live-server)
-variable "iso_url" {
-  type        = string
-  default     = "https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso"
-}
-variable "iso_checksum" {
-  type        = string
-  default     = "file:https://releases.ubuntu.com/noble/SHA256SUMS"
-  description = "Checksum file URL (Packer will look up the ISO hash inside)"
-}
-variable "iso_storage_pool" {
-  type        = string
-  description = "Proxmox storage pool that holds ISO images (e.g. local)"
-}
-
-# VM sizing defaults
-variable "vm_cores" {
+# =========================
+# VM sizing (default theo yêu cầu)
+# =========================
+variable "cpu_cores" {
   type        = number
   default     = 4
+  description = "Number of vCPU cores."
 }
-variable "vm_memory" {
+
+variable "memory_mb" {
   type        = number
   default     = 8192
-  description = "Memory in MB"
+  description = "Memory in MB."
 }
-variable "vm_disk_size" {
+
+variable "disk_storage_pool" {
+  type        = string
+  default     = "hdd-lvm"
+  description = "Proxmox storage pool for the VM disk (e.g. local-lvm, hdd-lvm)."
+}
+
+variable "disk_size" {
   type        = string
   default     = "40G"
-}
-variable "vm_storage_pool" {
-  type        = string
-  description = "Proxmox storage pool for VM disks (e.g. local-lvm, ceph, ...)"
-}
-variable "vm_bridge" {
-  type        = string
-  default     = "vmbr0"
+  description = "VM disk size, e.g. 40G."
 }
 
+# =========================
+# Portable options
+# =========================
+variable "iso_storage_pool" {
+  type        = string
+  description = "Proxmox storage pool to store the downloaded ISO (e.g. hdd-data)."
+}
 
-# SSH
+variable "mgmt_bridge" {
+  type        = string
+  description = "Proxmox bridge for management/WAN NIC (net0)."
+}
+
+variable "cloud_init_storage_pool" {
+  type        = string
+  default     = "local-lvm"
+  description = "Storage pool to store the Cloud-Init CDROM."
+}
+
+# =========================
+# SSH communicator (key-based)
+# =========================
 variable "ssh_username" {
   type        = string
   default     = "blue"
+  description = "SSH username to connect after install."
 }
+
 variable "ssh_private_key_file" {
   type        = string
-  description = "Path to your SSH private key file (ed25519). Do NOT commit private keys."
+  description = "Private key path that matches the authorized key injected by autoinstall."
 }
+
 variable "ssh_timeout" {
   type        = string
-  default     = "30m"
+  default     = "45m"
+  description = "SSH timeout for long installs."
+}
+
+# Optional: interface name inside guest to help plugin pick IP (can override if needed)
+variable "vm_interface" {
+  type        = string
+  default     = "ens18"
+  description = "Guest NIC name used to detect IP (adjust if your guest uses a different name)."
 }
