@@ -79,7 +79,7 @@ source "proxmox-iso" "wazuh_manager" {
   # =========================
   # Packer HTTP server (serves ./http)
   # =========================
-  http_directory = "${path.root}/http"
+  http_directory = "http"
 
   # =========================
   # Boot & unattended install (Ubuntu autoinstall)
