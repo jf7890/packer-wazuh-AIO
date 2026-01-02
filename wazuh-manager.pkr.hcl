@@ -92,13 +92,14 @@ boot_command = [
   "<esc><wait>",
   "e<wait>",
 
-  # Trong GRUB editor: xuống đúng dòng bắt đầu bằng "linux ..."
+  # Trong GRUB editor: dòng thứ 2 thường là "linux ..."
   "<down><end><wait>",
 
-  # Append kernel params (nhớ có trailing slash và '---')
-  " autoinstall ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ ip=dhcp ipv6.disable=1 ---<wait>",
+  # QUAN TRỌNG: quote ds=... để tránh lỗi parse dấu ';' trong GRUB
+  " autoinstall ip=dhcp ipv6.disable=1 'ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' ---<wait>",
 
-  "<f10><wait>"
+  # Ctrl+X thường ổn định hơn F10 trên console PVE
+  "<ctrl+x><wait>"
 ]
 
   # =========================
