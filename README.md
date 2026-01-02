@@ -28,6 +28,10 @@ Packer communicator requires you to provide **ssh_private_key_file** in your `.a
 
     - If you use API tokens: set `proxmox_username` like `user@pam!tokenid` and set `proxmox_token` to the token secret.
 
+
+## Disk layout
+This template is **LVM-only** (Ubuntu autoinstall storage layout: `lvm`).
+
 ## Usage
 ```bash
 cd wazuh-manager-packer

@@ -72,19 +72,9 @@ variable "vm_storage_pool" {
 }
 variable "vm_bridge" {
   type        = string
-  default     = "vmbr10"
+  default     = "vmbr0"
 }
 
-# Partition/layout selector (maps to Ubuntu autoinstall 'storage.layout.name')
-variable "disk_layout" {
-  type        = string
-  default     = "hdd-lvm"
-  description = "Choose: hdd-lvm or hdd-direct"
-  validation {
-    condition     = contains(["hdd-lvm", "hdd-direct"], var.disk_layout)
-    error_message = "disk_layout must be one of: hdd-lvm, hdd-direct"
-  }
-}
 
 # SSH
 variable "ssh_username" {

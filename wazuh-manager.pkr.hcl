@@ -50,7 +50,7 @@ source "proxmox-iso" "wazuh_manager" {
   }
 
   # Autoinstall via NoCloud over HTTP
-  http_directory = "${path.root}/http/${var.disk_layout}"
+  http_directory = "${path.root}/http/hdd-lvm"
 
   boot_wait = "5s"
   boot_command = [
