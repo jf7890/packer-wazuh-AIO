@@ -1,0 +1,29 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+    variant: ''
+  timezone: UTC
+  identity:
+    hostname: wazuh-manager
+    username: blue
+    password: "$6$rounds=4096$packer$wBG7A2d8Jt0GvR1mV9mQhVhKp9C0mL9n3d1wTqg4e5qK1t8b5kGJQbJw0mM4x7sY1F1Ck7kYF6qvQp2x0/"
+  ssh:
+    install-server: true
+    authorized-keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIC5JU9neFzrsWZKMtEJ1lTcWLvhvKqQUd80/Nla7oqT blue-router"
+    allow-pw: false
+  packages:
+    - qemu-guest-agent
+    - openssh-server
+    - curl
+    - ca-certificates
+    - gnupg
+    - apt-transport-https
+  storage:
+    layout:
+      name: direct
+  late-commands:
+    - curtin in-target --target=/target -- systemctl enable qemu-guest-agent
