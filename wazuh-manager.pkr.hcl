@@ -33,7 +33,7 @@ source "proxmox-iso" "wazuh_manager" {
   # =========================
   boot_iso {
     type             = "scsi"
-    iso_url          = "https://releases.ubuntu.com/24.04/ubuntu-24.04.3-live-server-amd64.iso"
+    iso_url          = "https://download.nus.edu.sg/mirror/ubuntu-releases/releases/24.04.3/ubuntu-24.04.3-live-server-amd64.iso"
     iso_checksum     = "sha256:c3514bf0056180d09376462a7a1b4f213c1d6e8ea67fae5c25099c6fd3d8274b"
     iso_storage_pool = var.iso_storage_pool
     iso_download_pve = true
