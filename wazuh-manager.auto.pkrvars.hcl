@@ -24,4 +24,4 @@ cloud_init_storage_pool = "local-lvm"
 # ===== SSH key-based =====
 ssh_username         = "blue"
 ssh_private_key_file = "~/.ssh/id_ed25519"
-vm_interface         = "eth0"
+vm_interface         = "ens18"

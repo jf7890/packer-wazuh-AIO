@@ -21,6 +21,7 @@ autoinstall:
   packages:
     - qemu-guest-agent
     - curl
+    - openssh-server
     - gnupg
     - apt-transport-https
   late-commands:
@@ -31,4 +32,6 @@ autoinstall:
     - curtin in-target -- sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config >/dev/null 2>&1 || true
     - curtin in-target -- sed -i 's/^#\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' /etc/ssh/sshd_config >/dev/null 2>&1 || true
     - curtin in-target -- sed -i 's/^#\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config >/dev/null 2>&1 || true
-    - curtin in-target -- systemctl restart ssh >/dev/null 2>&1 || true
+    - curtin in-target -- systemctl restart ssh >/dev/null 2>&1    - curtin in-target -- sh -c 'systemctl enable --now qemu-guest-agent > /dev/null 2>&1 || true'
+    - curtin in-target -- sh -c 'systemctl enable --now ssh > /dev/null 2>&1 || true'    - curtin in-target -- sh -c 'systemctl enable --now qemu-guest-agent > /dev/null 2>&1 || true'
+    - curtin in-target -- sh -c 'systemctl enable --now ssh > /dev/null 2>&1 || true'
