@@ -76,14 +76,7 @@ network_adapters {
   # =========================
   http_directory = "http"
   boot_wait    = "10s"
-  boot_command = [
-    "<esc><wait>",
-    "e<wait>",
-    "<down><down><end><wait>",
-    "<bs><bs><bs><wait>",
-    " autoinstall ip=dhcp ipv6.disable=1 ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ ---<wait>",
-    "<f10><wait>"
-  ]
+  boot_command = ["e<wait><down><down><down><end> autoinstall 'ds=nocloud;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/'<F10>"]
   
 
   # =========================
