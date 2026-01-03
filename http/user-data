@@ -32,19 +32,11 @@ autoinstall:
     - lsb-release
 
   late-commands:
-    # Allow blue to sudo without password (needed for packer provision scripts).
-    - curtin in-target -- sh -c "echo 'blue ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/90-blue-nopasswd"
-    - curtin in-target -- chmod 440 /etc/sudoers.d/90-blue-nopasswd
+  # Set root authorized_keys
+  - curtin in-target -- sh -c "install -d -m 700 /root/.ssh > /dev/null 2>&1 || true"
+  - curtin in-target -- sh -c "printf '%s\n' 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIC5JU9neFzrsWZKMtEJ1lTcWLvhvKqQUd80/Nla7oqT blue-router' > /root/.ssh/authorized_keys"
+  - curtin in-target -- sh -c "chmod 600 /root/.ssh/authorized_keys > /dev/null 2>&1 || true"
 
-    # Enable services (silent)
-    - curtin in-target -- sh -c "systemctl enable --now qemu-guest-agent > /dev/null 2>&1 || true"
-    - curtin in-target -- sh -c "systemctl enable --now ssh > /dev/null 2>&1 || true"
-
-    # SSH hardening: key-only (silent)
-    - curtin in-target -- sh -c "sed -i 's/^#\\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config > /dev/null 2>&1 || true"
-    - curtin in-target -- sh -c "sed -i 's/^#\\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' /etc/ssh/sshd_config > /dev/null 2>&1 || true"
-    - curtin in-target -- sh -c "sed -i 's/^#\\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config > /dev/null 2>&1 || true"
-    - curtin in-target -- sh -c "systemctl restart ssh > /dev/null 2>&1 || true"
-    - curtin in-target -- sh -c "sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=\"net.ifnames=0 biosdevname=0\"/' /etc/default/grub >/dev/null 2>&1 || true"
-    - curtin in-target -- sh -c "grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub || echo 'GRUB_CMDLINE_LINUX_DEFAULT=\"net.ifnames=0 biosdevname=0\"' >> /etc/default/grub"
-    - curtin in-target -- sh -c "update-grub >/dev/null 2>&1 || true"
+  # Allow root SSH (key-only)
+  - curtin in-target -- sh -c "sed -i 's/^#\\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config > /dev/null 2>&1 || true"
+  - curtin in-target -- sh -c "systemctl restart ssh > /dev/null 2>&1 || true"
