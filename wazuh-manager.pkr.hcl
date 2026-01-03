@@ -108,22 +108,15 @@ build {
   provisioner "shell" {
     script = "scripts/provision-wazuh-manager.sh"
   }
-  post-processor "shell-local" {
+post-processor "shell-local" {
   environment_vars = [
     "PVE_HOST=10.10.100.1",
     "PVE_USER=root",
     "TEMPLATE_NAME=${local.template_name}",
   ]
+
   inline = [
-    "bash -lc 'set -euo pipefail; " ..
-    "ssh -o StrictHostKeyChecking=no ${PVE_USER}@${PVE_HOST} " ..
-    "\"VMID=\\$(qm list | awk \\\"\\$2==\\\\\\\"${TEMPLATE_NAME}\\\\\\\" {print \\$1; exit}\\\"); " ..
-    "[ -n \\\"\\$VMID\\\" ] || exit 1; " ..
-    "for i in \\$(seq 1 30); do " ..
-    "  qm unlock \\$VMID >/dev/null 2>&1 || true; " ..
-    "  qm set \\$VMID -delete net0 >/dev/null 2>&1 && exit 0 || true; " ..
-    "  sleep 2; " ..
-    "done; exit 1\"'"
+    "bash -lc 'set -euo pipefail; ssh -o StrictHostKeyChecking=no ${PVE_USER}@${PVE_HOST} \"VMID=$(qm list | awk \\\"\\$2==\\\\\\\"${TEMPLATE_NAME}\\\\\\\" {print \\$1; exit}\\\"); [ -n \\\"\\$VMID\\\" ] || exit 1; for i in $(seq 1 30); do qm unlock \\$VMID >/dev/null 2>&1 || true; qm set \\$VMID -delete net0 >/dev/null 2>&1 && exit 0 || true; sleep 2; done; exit 1\"'"
   ]
 }
 }
