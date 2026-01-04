@@ -33,6 +33,7 @@ apt-get update -y > /dev/null 2>&1 || true
 echo "[+] Installing wazuh-manager..."
 apt-get install -y wazuh-manager > /dev/null 2>&1 || true
 
+echo "[+] Start service wazuh-manager..."
 systemctl enable wazuh-manager > /dev/null 2>&1 || true
 systemctl start  wazuh-manager > /dev/null 2>&1 || true
 
@@ -61,7 +62,7 @@ EOF
 
 # Remove cloud-init generated netplan so ours is authoritative
 rm -f /etc/netplan/50-cloud-init.yaml >/dev/null 2>&1 || true
-
+echo "[+] Editing netplan config..."
 # Write SAFE netplan (keep default route on mgmt/ens18; blue/ens19 static only)
 NETPLAN_FILE="/etc/netplan/01-safe-template.yaml"
 cat > "${NETPLAN_FILE}" <<'EOF'
