@@ -60,5 +60,63 @@ systemctl stop filebeat       > /dev/null 2>&1 || true
 
 sleep 10 || true
 sync || true
+set -eux
+
+echo "[+] Template cleanup (remove users/keys/identity)..."
+
+# 1) Remove authorized_keys (temporary build key)
+rm -f /root/.ssh/authorized_keys || true
+rm -f /home/ubuntu/.ssh/authorized_keys || true
+
+# (Tuỳ bạn) nếu muốn giữ user ubuntu nhưng không cho password đăng nhập:
+passwd -l ubuntu > /dev/null 2>&1 || true
+# khoá root (khuyến nghị nếu bạn muốn clone chỉ đăng nhập qua cloud-init injected key)
+passwd -l root > /dev/null 2>&1 || true
+
+# 2) Reset SSH host keys (để clone mỗi máy tự generate)
+rm -f /etc/ssh/ssh_host_* || true
+
+# 3) Cloud-init: clean để clone chạy lại và nhận key mới từ Proxmox Cloud-Init
+if command -v cloud-init >/dev/null 2>&1; then
+  cloud-init clean --logs > /dev/null 2>&1 || true
+fi
+
+# 4) Reset machine-id (tránh clone trùng identity)
+truncate -s 0 /etc/machine-id || true
+rm -f /var/lib/dbus/machine-id || true
+
+# 5) Dọn logs
+find /var/log -type f -exec truncate -s 0 {} \; || true
+
+sync || true
+set -eux
+
+echo "[+] Template cleanup (remove users/keys/identity)..."
+
+# 1) Remove authorized_keys (temporary build key)
+rm -f /root/.ssh/authorized_keys || true
+rm -f /home/ubuntu/.ssh/authorized_keys || true
+
+# (Tuỳ bạn) nếu muốn giữ user ubuntu nhưng không cho password đăng nhập:
+passwd -l ubuntu > /dev/null 2>&1 || true
+# khoá root (khuyến nghị nếu bạn muốn clone chỉ đăng nhập qua cloud-init injected key)
+passwd -l root > /dev/null 2>&1 || true
+
+# 2) Reset SSH host keys (để clone mỗi máy tự generate)
+rm -f /etc/ssh/ssh_host_* || true
+
+# 3) Cloud-init: clean để clone chạy lại và nhận key mới từ Proxmox Cloud-Init
+if command -v cloud-init >/dev/null 2>&1; then
+  cloud-init clean --logs > /dev/null 2>&1 || true
+fi
+
+# 4) Reset machine-id (tránh clone trùng identity)
+truncate -s 0 /etc/machine-id || true
+rm -f /var/lib/dbus/machine-id || true
+
+# 5) Dọn logs
+find /var/log -type f -exec truncate -s 0 {} \; || true
+
+sync || true
 
 echo "[+] Done."
