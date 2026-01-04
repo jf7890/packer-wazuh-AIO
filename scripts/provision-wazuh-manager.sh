@@ -65,30 +65,19 @@ rm -f /etc/netplan/50-cloud-init.yaml >/dev/null 2>&1 || true
 # Write SAFE netplan (keep default route on mgmt/ens18; blue/ens19 static only)
 NETPLAN_FILE="/etc/netplan/01-safe-template.yaml"
 cat > "${NETPLAN_FILE}" <<'EOF'
-network:
-  version: 2
-  renderer: networkd
-  ethernets:
-    ens18:
-      dhcp4: true
-      dhcp6: false
-      optional: true
-
-    ens19:
-      dhcp4: false
-      dhcp6: false
-      addresses:
-        - 10.10.172.10/24
-      nameservers:
-        addresses:
-          - 1.1.1.1
-      optional: true
+  ens1:
+    dhcp4: false
+    dhcp6: false
+    addresses:
+      - 10.10.172.10/24
+    routes:
+      - to: default
+        via: 10.10.172.1
+    nameservers:
+      addresses: [1.1.1.1]
+    optional: true
 EOF
 chmod 0644 "${NETPLAN_FILE}" >/dev/null 2>&1 || true
-
-# Apply netplan at the end of build (still safe: no route flip)
-netplan generate > /dev/null 2>&1 || true
-netplan apply    > /dev/null 2>&1 || true
 
 systemctl stop wazuh-manager > /dev/null 2>&1 || true
 systemctl stop filebeat      > /dev/null 2>&1 || true
@@ -114,6 +103,9 @@ rm -f /etc/ssh/ssh_host_* || true
 if command -v cloud-init >/dev/null 2>&1; then
   cloud-init clean --logs > /dev/null 2>&1 || true
 fi
+
+netplan generate > /dev/null 2>&1 || true
+netplan apply    > /dev/null 2>&1 || true
 
 # Reset machine-id
 truncate -s 0 /etc/machine-id || true
