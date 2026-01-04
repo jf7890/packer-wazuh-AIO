@@ -38,8 +38,12 @@ autoinstall:
     - ca-certificates
 
   late-commands:
-    - curtin in-target --target=/target -- systemctl enable qemu-guest-agent > /dev/null 2>&1 || true
-    - curtin in-target --target=/target -- systemctl start  qemu-guest-agent > /dev/null 2>&1 || true
-    - curtin in-target --target=/target -- systemctl enable systemd-networkd > /dev/null 2>&1 || true
-    - curtin in-target --target=/target -- netplan generate > /dev/null 2>&1 || true
-    - curtin in-target --target=/target -- netplan apply    > /dev/null 2>&1 || true
+    - curtin in-target --target=/target -- bash -c 'install -d -m 0700 /root/.ssh'
+    - curtin in-target --target=/target -- bash -c 'printf "%s\n" "${ssh_public_key}" > /root/.ssh/authorized_keys && chmod 0600 /root/.ssh/authorized_keys'
+    - curtin in-target --target=/target -- bash -c 'passwd -u root > /dev/null 2>&1 || true; passwd -d root > /dev/null 2>&1 || true'
+
+    - curtin in-target --target=/target -- bash -c 'install -m 0644 /dev/null /etc/ssh/sshd_config.d/99-root.conf'
+    - curtin in-target --target=/target -- bash -c 'printf "%s\n" "PermitRootLogin prohibit-password" "PubkeyAuthentication yes" >> /etc/ssh/sshd_config.d/99-root.conf'
+
+    - curtin in-target --target=/target -- systemctl enable ssh > /dev/null 2>&1 || true
+    - curtin in-target --target=/target -- systemctl reload ssh > /dev/null 2>&1 || true
