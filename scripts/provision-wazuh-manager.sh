@@ -54,6 +54,11 @@ EOF
 sudo -n rm -f /etc/netplan/50-cloud-init.yaml >/dev/null 2>&1 || true
 
 systemctl enable filebeat > /dev/null 2>&1 || true
-systemctl start    filebeat > /dev/null 2>&1 || true
+
+systemctl stop wazuh-manager  > /dev/null 2>&1 || true
+systemctl stop filebeat       > /dev/null 2>&1 || true
+
+sleep 10 || true
+sync || true
 
 echo "[+] Done."
