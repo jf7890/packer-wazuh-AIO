@@ -20,24 +20,30 @@ network: {config: disabled}
 EOF
 
 rm -f /etc/netplan/50-cloud-init.yaml >/dev/null 2>&1 || true
-
 echo "[+] Writing netplan..."
+NET_IF="ens18"
+IP_CIDR="172.16.99.10/24"
+GATEWAY="172.16.99.1"
+DNS1="1.1.1.1"
+DNS2="8.8.8.8"
 NETPLAN_FILE="/etc/netplan/01-safe-template.yaml"
-cat > "${NETPLAN_FILE}" <<'EOF'
+cat > "${NETPLAN_FILE}" <<EOF
 network:
   version: 2
   renderer: networkd
   ethernets:
-    ens18:
+    ${NET_IF}:
       dhcp4: false
       dhcp6: false
       addresses:
-        - 10.10.172.10/24
+        - ${IP_CIDR}
       routes:
         - to: default
-          via: 10.10.172.1
+          via: ${GATEWAY}
       nameservers:
-        addresses: [1.1.1.1]
+        addresses:
+          - ${DNS1}
+          - ${DNS2}
       optional: true
 EOF
 chmod 0644 "${NETPLAN_FILE}" >/dev/null 2>&1 || true
@@ -200,6 +206,26 @@ systemctl stop wazuh-manager   >/dev/null 2>&1 || true
 systemctl stop wazuh-indexer   >/dev/null 2>&1 || true
 systemctl stop wazuh-dashboard >/dev/null 2>&1 || true
 sleep 5 || true
+sync || true
+
+echo "[+] Template cleanup (SSH keys / identity)..."
+
+echo "[+] 1) Remove build-time authorized_keys"
+rm -f /root/.ssh/authorized_keys || true
+rm -f /home/ubuntu/.ssh/authorized_keys || true
+
+echo "[+] Reset SSH host keys so clones regenerate unique keys on first boot"
+rm -f /etc/ssh/ssh_host_* || true
+
+echo "[+] Clean cloud-init so clone can re-run datasource and accept new injected keys"
+if command -v cloud-init >/dev/null 2>&1; then
+  cloud-init clean --logs >/dev/null 2>&1 || true
+fi
+
+echo "[+] Reset machine-id to avoid clones sharing identity"
+truncate -s 0 /etc/machine-id || true
+rm -f /var/lib/dbus/machine-id || true
+
 sync || true
 
 echo "[+] Done."

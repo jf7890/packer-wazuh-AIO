@@ -55,6 +55,7 @@ source "proxmox-iso" "wazuh_stack" {
   network_adapters {
     model  = "virtio"
     bridge = var.mgmt_bridge
+    vlan_tag = 99
   }
 
   # ===== Autoinstall seed served by Packer HTTP server =====
