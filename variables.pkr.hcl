@@ -43,7 +43,7 @@ variable "iso_file" {
 
 variable "mgmt_bridge" {
   type    = string
-  default = env("PACKER_INTERNET_BRIDGE_CARD")
+  default = env("PACKER_BRIDGE_LAN")
 }
 
 variable "cloud_init_storage_pool" {
