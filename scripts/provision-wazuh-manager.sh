@@ -22,7 +22,7 @@ EOF
 rm -f /etc/netplan/50-cloud-init.yaml >/dev/null 2>&1 || true
 echo "[+] Writing netplan..."
 NET_IF="ens18"
-IP_CIDR="172.16.99.10/24"
+IP_CIDR="172.16.99.11/24"
 GATEWAY="172.16.99.1"
 DNS1="1.1.1.1"
 DNS2="8.8.8.8"
