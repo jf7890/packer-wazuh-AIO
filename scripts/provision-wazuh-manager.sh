@@ -7,6 +7,8 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   exec sudo -n -E bash "$0" "$@"
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 echo "[+] Starting Wazuh AIO provisioning..."
 
 # ----------------------------
@@ -83,6 +85,16 @@ if [[ -f /root/wazuh-install-files.tar ]]; then
 else
   echo "[!] wazuh-install-files.tar not found. Password export skipped."
 fi
+
+# ----------------------------
+# Auto-manage per-agent DLS role/user (Discover-ready)
+# ----------------------------
+echo "[+] Installing wazuh-auto-dls automation (script + systemd)..."
+install -m 0700 "${SCRIPT_DIR}/wazuh-auto-dls.sh" /usr/local/sbin/wazuh-auto-dls.sh
+install -m 0644 "${SCRIPT_DIR}/wazuh-auto-dls.service" /etc/systemd/system/wazuh-auto-dls.service
+install -m 0644 "${SCRIPT_DIR}/wazuh-auto-dls.timer" /etc/systemd/system/wazuh-auto-dls.timer
+systemctl daemon-reload >/dev/null 2>&1 || true
+systemctl enable wazuh-auto-dls.timer >/dev/null 2>&1 || true
 
 # ----------------------------
 # Add custom rules (local rules)
