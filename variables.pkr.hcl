@@ -57,14 +57,14 @@ variable "ssh_username" {
   default = "root"
 }
 
-variable "pri_key" {
+variable "ssh_public_key" {
   type    = string
-  default = env("PACKER_SSH_PRIVATE_KEY")
+  default = env("PACKER_SSH_PUBLIC_KEY")
 }
 
-variable "pub_key" {
+variable "ssh_private_key_file" {
   type    = string
-  default     = env("PACKER_SSH_PUBLIC_KEY")
+  default = env("PACKER_SSH_PRIVATE_KEY")
 }
 
 variable "vm_interface" {
