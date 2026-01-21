@@ -15,7 +15,7 @@ autoinstall:
     install-server: true
     allow-pw: true
     authorized-keys:
-      - ${pub_key}
+      - "${pub_key}"
 
   network:
     version: 2
