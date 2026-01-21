@@ -65,10 +65,6 @@ variable "pri_key" {
 variable "pub_key" {
   type    = string
   default     = env("PACKER_SSH_PUBLIC_KEY")
-  validation {
-    condition     = length(trimspace(var.pub_key)) > 0
-    error_message = "PACKER_SSH_PUBLIC_KEY must be set to a valid public key for autoinstall SSH."
-  }
 }
 
 variable "vm_interface" {
