@@ -4,7 +4,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Automate per-agent DLS role/user creation and cleanup on Wazuh AIO.
 # - Creates role dls-agent-<id> with DLS on wazuh-alerts-* and wazuh-archives-*
-# - Creates user <agent_name>-<agent_id> (default password DEFAULT_PASSWORD or CyR4ng3_123)
+# - Creates user <agent_name> (default password DEFAULT_PASSWORD or CyR4ng3_123)
 # - Maps user to DLS role + kibana_user + global_tenant read
 # - Removes role/user and agent when disconnected
 # - Persists credentials to /root/agent-users.txt (chmod 600)
@@ -167,7 +167,7 @@ ensure_role() {
   local agent_id="$1" agent_name="$2"
   local role="dls-agent-${agent_id}"
   local username
-  username="$(sanitize_name "${agent_name}-${agent_id}")"
+  username="$(sanitize_name "${agent_name}")"
 
   local role_body
   role_body=$(jq -nc \
@@ -203,7 +203,7 @@ teardown_agent() {
   local agent_id="$1" agent_name="$2"
   local username role
   role="dls-agent-${agent_id}"
-  username="${STATE_USER[$agent_id]:-$(sanitize_name "${agent_name}-${agent_id}")}"
+  username="${STATE_USER[$agent_id]:-$(sanitize_name "${agent_name}")}"
 
   remove_user_from_mapping "${ROLE_UI}" "${username}"
   call_indexer "DELETE" "/_plugins/_security/api/rolesmapping/${role}" >/dev/null 2>&1 || true
