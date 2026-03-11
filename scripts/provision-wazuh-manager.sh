@@ -198,6 +198,40 @@ EOF
 fi
 
 # quyền file rules (thường group ossec)
+if ! grep -q 'rule id="100300"' "${RULES_FILE}"; then
+  cat >> "${RULES_FILE}" <<'EOF'
+
+<group name="custom,ai_alerts,blueteam,web,">
+
+  <!-- Generic AI event -->
+  <rule id="100300" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="location">/opt/capstone-blueteam-agent/logs/ai_alerts.jsonl</field>
+    <description>BlueTeam AI event detected: $(data.event_type)</description>
+    <group>ai_alerts,web,</group>
+  </rule>
+
+  <!-- Any malicious verdict from AI -->
+  <rule id="100301" level="12">
+    <if_sid>100300</if_sid>
+    <field name="data.is_malicious">^(true|True|TRUE)$</field>
+    <field name="data.verdict">^(malicious|Malicious|MALICIOUS)$</field>
+    <description>BlueTeam AI malicious event: attack=$(data.ai_analysis.attack_type), srcip=$(data.network.srcip), uri=$(data.http.uri)</description>
+    <group>attack,web,ai_alerts,</group>
+  </rule>
+
+  <!-- Escalate critical AI events -->
+  <rule id="100302" level="15">
+    <if_sid>100301</if_sid>
+    <field name="data.ai_analysis.severity">^(critical|Critical|CRITICAL)$</field>
+    <description>BlueTeam AI critical malicious event: attack=$(data.ai_analysis.attack_type), mitre=$(data.threat_classification.mitre_attack_id)</description>
+    <group>attack,web,high_risk,ai_alerts,</group>
+  </rule>
+
+</group>
+EOF
+fi
+
 chown root:ossec "${RULES_FILE}" >/dev/null 2>&1 || true
 chmod 0640 "${RULES_FILE}" >/dev/null 2>&1 || true
 
