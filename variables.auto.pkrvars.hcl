@@ -1,6 +1,6 @@
 # ===== VM sizing =====
 cpu_cores = 8
-memory_mb = 10240
+memory_mb = 16384
 disk_storage_pool = "local-lvm"
 disk_size         = "60G"
 
