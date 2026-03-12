@@ -239,16 +239,19 @@ elif getent group ossec >/dev/null 2>&1; then
   RULES_GROUP="ossec"
 fi
 
-echo "[+] Installing BlueTeam AI JSON rules..."
-BLUETEAM_RULE_SRC="${SCRIPT_DIR}/wazuh-rules/1005-blueteam-web-json_rules.xml"
-BLUETEAM_RULE_DST="${RULES_DIR}/1005-blueteam-web-json_rules.xml"
-BLUETEAM_RULE_TMP="$(mktemp)"
+echo "[+] Installing custom Wazuh XML rules..."
+for RULE_SRC in "${SCRIPT_DIR}"/wazuh-rules/*.xml; do
+  [[ -f "${RULE_SRC}" ]] || continue
 
-sed -e '1s/^\xEF\xBB\xBF//' -e 's/\r$//' "${BLUETEAM_RULE_SRC}" > "${BLUETEAM_RULE_TMP}"
-xmllint --noout "${BLUETEAM_RULE_TMP}"
-install -m 0640 "${BLUETEAM_RULE_TMP}" "${BLUETEAM_RULE_DST}"
-chown root:"${RULES_GROUP}" "${BLUETEAM_RULE_DST}" >/dev/null 2>&1 || true
-rm -f "${BLUETEAM_RULE_TMP}"
+  RULE_DST="${RULES_DIR}/$(basename "${RULE_SRC}")"
+  RULE_TMP="$(mktemp)"
+
+  sed -e '1s/^\xEF\xBB\xBF//' -e 's/\r$//' "${RULE_SRC}" > "${RULE_TMP}"
+  xmllint --noout "${RULE_TMP}"
+  install -m 0640 "${RULE_TMP}" "${RULE_DST}"
+  chown root:"${RULES_GROUP}" "${RULE_DST}" >/dev/null 2>&1 || true
+  rm -f "${RULE_TMP}"
+done
 
 chown root:"${RULES_GROUP}" "${RULES_FILE}" >/dev/null 2>&1 || true
 chmod 0640 "${RULES_FILE}" >/dev/null 2>&1 || true
