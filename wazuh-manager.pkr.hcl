@@ -75,7 +75,7 @@ source "proxmox-iso" "wazuh_stack" {
 
   # ===== SSH (key-based, root) =====
   ssh_username         = var.ssh_username
-  ssh_private_key_file = var.ssh_private_key_file
+  ssh_private_key_file = var.ssh_private_key_file != "" ? var.ssh_private_key_file : null
   ssh_timeout          = "60m"
 
   # plugin reads the IP address for this interface from qemu-guest-agent
@@ -88,7 +88,7 @@ source "proxmox-iso" "wazuh_stack" {
     "<esc><wait>",
     "e<wait>",
     "<down><down><down><end><wait>",
-    " autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ cloud-config-url=/dev/null net.ifnames=0 biosdevname=0 ---<wait>",
+    " autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ cloud-config-url=/dev/null ---<wait>",
     "<f10><wait>"
   ]
 

@@ -1,0 +1,50 @@
+<group name="custom,blueteam,web,">
+
+  <rule id="100400" level="0">
+    <if_sid>86600</if_sid>
+    <location type="pcre2">ai_alerts\.jsonl$</location>
+    <field name="service_name" type="pcre2">^blueteam-agent$</field>
+    <field name="event_type" type="pcre2">^http_analysis$</field>
+    <field name="event_category" type="pcre2">^web_attack_detection$</field>
+    <description>BlueTeam AI JSON web attack event.</description>
+    <options>no_full_log</options>
+    <group>ai_alerts,blueteam,web,</group>
+  </rule>
+
+  <rule id="100401" level="10">
+    <if_sid>100400</if_sid>
+    <field name="is_malicious" type="pcre2">(?i)^true$</field>
+    <field name="verdict" type="pcre2">(?i)^malicious$</field>
+    <description>BlueTeam AI detected a malicious web request: attack=$(ai_analysis.attack_type), srcip=$(network.srcip), uri=$(http.uri)</description>
+    <group>attack,ai_alerts,blueteam,web,</group>
+  </rule>
+
+  <rule id="100402" level="14">
+    <if_sid>100401</if_sid>
+    <field name="ai_analysis.severity" type="pcre2">(?i)^critical$</field>
+    <description>BlueTeam AI critical malicious web request: attack=$(ai_analysis.attack_type), confidence=$(ai_analysis.confidence_score), mitre=$(threat_classification.mitre_attack_id)</description>
+    <group>attack,high_risk,ai_alerts,blueteam,web,</group>
+  </rule>
+
+  <rule id="100403" level="15">
+    <if_sid>100402</if_sid>
+    <field name="response_recommendation.recommended_action" type="pcre2">(?i)^block$</field>
+    <description>BlueTeam AI recommends blocking a critical malicious web request: attack=$(ai_analysis.attack_type), srcip=$(network.srcip), uri=$(http.uri)</description>
+    <group>attack,blocked,high_risk,ai_alerts,blueteam,web,</group>
+  </rule>
+
+  <rule id="100404" level="15">
+    <if_sid>86600</if_sid>
+    <location type="pcre2">ai_alerts\.jsonl$</location>
+    <field name="service_name" type="pcre2">^blueteam-agent$</field>
+    <field name="event_type" type="pcre2">^http_analysis$</field>
+    <field name="event_category" type="pcre2">^web_attack_detection$</field>
+    <field name="is_malicious" type="pcre2">(?i)^true$</field>
+    <field name="verdict" type="pcre2">(?i)^malicious$</field>
+    <field name="ai_analysis.severity" type="pcre2">(?i)^critical$</field>
+    <field name="response_recommendation.recommended_action" type="pcre2">(?i)^block$</field>
+    <description>BlueTeam AI direct match for a critical malicious web request: attack=$(ai_analysis.attack_type), srcip=$(network.srcip), uri=$(http.uri)</description>
+    <group>attack,blocked,high_risk,ai_alerts,blueteam,web,</group>
+  </rule>
+
+</group>

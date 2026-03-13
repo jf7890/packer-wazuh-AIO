@@ -58,7 +58,7 @@ netplan generate >/dev/null 2>&1 || true
 # ----------------------------
 echo "[+] Installing prerequisites..."
 apt-get update -y >/dev/null 2>&1 || true
-apt-get install -y curl tar ca-certificates jq >/dev/null 2>&1 || true
+apt-get install -y curl tar ca-certificates jq libxml2-utils >/dev/null 2>&1 || true
 
 # ----------------------------
 # Wazuh AIO install (Quickstart)
@@ -206,7 +206,7 @@ if ! grep -q 'rule id="100300"' "${RULES_FILE}"; then
   <!-- Generic AI event -->
   <rule id="100300" level="3">
     <decoded_as>json</decoded_as>
-    <field name="location">/opt/capstone-blueteam-agent/logs/ai_alerts.jsonl</field>
+    <location type="pcre2">ai_alerts\.jsonl$</location>
     <description>BlueTeam AI event detected: $(data.event_type)</description>
     <group>ai_alerts,web,</group>
   </rule>
@@ -214,8 +214,8 @@ if ! grep -q 'rule id="100300"' "${RULES_FILE}"; then
   <!-- Any malicious verdict from AI -->
   <rule id="100301" level="12">
     <if_sid>100300</if_sid>
-    <field name="data.is_malicious">^(true|True|TRUE)$</field>
-    <field name="data.verdict">^(malicious|Malicious|MALICIOUS)$</field>
+    <field name="data.is_malicious" type="pcre2">(?i)^true$</field>
+    <field name="data.verdict" type="pcre2">(?i)^malicious$</field>
     <description>BlueTeam AI malicious event: attack=$(data.ai_analysis.attack_type), srcip=$(data.network.srcip), uri=$(data.http.uri)</description>
     <group>attack,web,ai_alerts,</group>
   </rule>
@@ -223,7 +223,7 @@ if ! grep -q 'rule id="100300"' "${RULES_FILE}"; then
   <!-- Escalate critical AI events -->
   <rule id="100302" level="15">
     <if_sid>100301</if_sid>
-    <field name="data.ai_analysis.severity">^(critical|Critical|CRITICAL)$</field>
+    <field name="data.ai_analysis.severity" type="pcre2">(?i)^critical$</field>
     <description>BlueTeam AI critical malicious event: attack=$(data.ai_analysis.attack_type), mitre=$(data.threat_classification.mitre_attack_id)</description>
     <group>attack,web,high_risk,ai_alerts,</group>
   </rule>
@@ -232,11 +232,32 @@ if ! grep -q 'rule id="100300"' "${RULES_FILE}"; then
 EOF
 fi
 
-chown root:ossec "${RULES_FILE}" >/dev/null 2>&1 || true
+RULES_GROUP="ossec"
+if getent group wazuh >/dev/null 2>&1; then
+  RULES_GROUP="wazuh"
+elif getent group ossec >/dev/null 2>&1; then
+  RULES_GROUP="ossec"
+fi
+
+echo "[+] Installing custom Wazuh XML rules..."
+for RULE_SRC in "${SCRIPT_DIR}"/wazuh-rules/*.xml; do
+  [[ -f "${RULE_SRC}" ]] || continue
+
+  RULE_DST="${RULES_DIR}/$(basename "${RULE_SRC}")"
+  RULE_TMP="$(mktemp)"
+
+  sed -e '1s/^\xEF\xBB\xBF//' -e 's/\r$//' "${RULE_SRC}" > "${RULE_TMP}"
+  xmllint --noout "${RULE_TMP}"
+  install -m 0640 "${RULE_TMP}" "${RULE_DST}"
+  chown root:"${RULES_GROUP}" "${RULE_DST}" >/dev/null 2>&1 || true
+  rm -f "${RULE_TMP}"
+done
+
+chown root:"${RULES_GROUP}" "${RULES_FILE}" >/dev/null 2>&1 || true
 chmod 0640 "${RULES_FILE}" >/dev/null 2>&1 || true
 
 # Reload rules (restart manager)
-systemctl restart wazuh-manager >/dev/null 2>&1 || true
+systemctl restart wazuh-manager
 
 # ----------------------------
 # Disable Wazuh repo after install (recommended by docs)
