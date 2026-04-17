@@ -12,9 +12,8 @@ locals {
 }
 
 # ==========================================================
-# Proxmox Builder: Ubuntu 24.04 + Wazuh all-in-one stack
-# - net0: mgmt (vmbr10) used ONLY for Packer provisioning
-# - net1: blue (blue)  kept for the final template
+# Proxmox Builder: Ubuntu 22.04 + Wazuh all-in-one stack
+# - net0: management bridge used for installer, SSH, and provisioning
 # ==========================================================
 source "proxmox-iso" "wazuh_stack" {
   # ===== Proxmox connection =====
@@ -23,6 +22,7 @@ source "proxmox-iso" "wazuh_stack" {
   token            = var.proxmox_token
   node             = var.proxmox_node
   insecure_skip_tls_verify = var.proxmox_insecure_skip_tls_verify
+  task_timeout     = var.task_timeout
 
   # NOTE: var.vm_id default = 0 (auto). If your plugin treats 0 as "set", change to a real ID.
   vm_id = var.vm_id
@@ -30,7 +30,8 @@ source "proxmox-iso" "wazuh_stack" {
   # ===== Template identity =====
   vm_name              = local.template_name
   template_name        = local.template_name
-  template_description = "Ubuntu 24.04 + Wazuh all-in-one. Build uses net0(mgmt) then post-step keeps only blue NIC."
+  template_description = "Ubuntu 22.04 + Wazuh all-in-one. Build uses net0(mgmt) for provisioning."
+  os                   = "l26"
 
   # ===== VM sizing =====
   cores  = var.cpu_cores
@@ -57,8 +58,9 @@ source "proxmox-iso" "wazuh_stack" {
 
   # net0: mgmt
   network_adapters {
-    model  = "virtio"
-    bridge = var.mgmt_bridge
+    model    = "virtio"
+    bridge   = var.mgmt_bridge
+    firewall = false
     vlan_tag = 99
   }
 
@@ -78,19 +80,14 @@ source "proxmox-iso" "wazuh_stack" {
   http_port_min     = 8902
   http_port_max     = 8902
 
-  # ===== SSH target discovery =====
-  # If PACKER_SSH_HOST is set, connect directly by IP and do not depend on qemu-guest-agent.
-  qemu_agent = var.ssh_host == ""
+  # ===== QEMU guest agent for IP discovery =====
+  qemu_agent = true
 
   # ===== SSH =====
-  ssh_host             = var.ssh_host != "" ? var.ssh_host : null
   ssh_username         = var.ssh_username
   ssh_password         = "ubuntu"
   ssh_private_key_file = var.ssh_private_key_file != "" ? var.ssh_private_key_file : null
   ssh_timeout          = "2h"
-
-  # plugin reads the IP address for this interface from qemu-guest-agent
-  vm_interface         = var.vm_interface
 
   # ===== Ubuntu autoinstall boot command =====
   boot_wait = "5s"

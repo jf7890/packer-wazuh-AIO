@@ -10,7 +10,6 @@ cloud_init_storage_pool = "local-lvm"
 
 # ===== SSH key-based =====
 ssh_username         = "ubuntu"
-vm_interface         = "ens18"
 
 # ===== Proxmox connection =====
 proxmox_url      = "https://10.10.100.1:8006/api2/json"

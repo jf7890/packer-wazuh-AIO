@@ -19,13 +19,6 @@ autoinstall:
       - "${ssh_public_key}"
 %{ endif ~}
 
-  apt:
-    preserve_sources_list: false
-    geoip: false
-    primary:
-      - arches: [amd64]
-        uri: http://archive.ubuntu.com/ubuntu
-
   network:
     version: 2
     ethernets:
@@ -37,13 +30,10 @@ autoinstall:
         optional: true
 
   packages:
+    - qemu-guest-agent
     - sudo
-    - curl
-    - ca-certificates
 
   late-commands:
     - curtin in-target -- systemctl enable ssh
     - curtin in-target -- /bin/sh -c "echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu"
     - curtin in-target -- chmod 440 /etc/sudoers.d/ubuntu
-    - curtin in-target -- /bin/bash -lc 'export DEBIAN_FRONTEND=noninteractive; ok=0; for i in 1 2 3 4 5; do if apt-get update && apt-get install -y qemu-guest-agent; then ok=1; break; fi; sleep 15; done; exit 0'
-    - curtin in-target -- systemctl enable qemu-guest-agent || true
