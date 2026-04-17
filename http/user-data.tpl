@@ -14,8 +14,10 @@ autoinstall:
   ssh:
     install-server: true
     allow-pw: true
+%{ if ssh_public_key != "" ~}
     authorized-keys:
-      - "${pub_key}"
+      - "${ssh_public_key}"
+%{ endif ~}
 
   network:
     version: 2
@@ -27,16 +29,11 @@ autoinstall:
 
   packages:
     - qemu-guest-agent
+    - sudo
     - curl
     - ca-certificates
 
   late-commands:
-    # Enable root and set SSH key BEFORE disabling password
-    - curtin in-target --target=/target -- bash -c 'install -d -m 0700 /root/.ssh'
-    - curtin in-target --target=/target -- bash -c 'printf "%s\n" "${pub_key}" > /root/.ssh/authorized_keys && chmod 0600 /root/.ssh/authorized_keys'
-    - curtin in-target --target=/target -- bash -c 'passwd -u root > /dev/null 2>&1 || true; passwd -d root > /dev/null 2>&1 || true'
-    # Unlock root for key-based auth only
-    - curtin in-target --target=/target -- bash -c 'install -m 0644 /dev/null /etc/ssh/sshd_config.d/99-root.conf'
-    - curtin in-target --target=/target -- bash -c 'printf "%s\n" "PermitRootLogin prohibit-password" "PubkeyAuthentication yes" >> /etc/ssh/sshd_config.d/99-root.conf'
-    - curtin in-target --target=/target -- systemctl enable ssh > /dev/null 2>&1 || true
-    - curtin in-target --target=/target -- systemctl reload ssh > /dev/null 2>&1 || true
+    - curtin in-target -- systemctl enable ssh
+    - curtin in-target -- /bin/sh -c "echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu"
+    - curtin in-target -- chmod 440 /etc/sudoers.d/ubuntu

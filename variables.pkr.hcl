@@ -33,7 +33,7 @@ variable "disk_size" {
 # ===== Storage / Network =====
 variable "iso_storage_pool" {
   type    = string
-  default = "hdd-data"
+  default = env("PACKER_ISO_STORAGE")
 }
 
 variable "iso_url" {
@@ -59,7 +59,7 @@ variable "cloud_init_storage_pool" {
 # ===== SSH key-based =====
 variable "ssh_username" {
   type    = string
-  default = "root"
+  default = "ubuntu"
 }
 
 variable "ssh_public_key" {
@@ -69,7 +69,7 @@ variable "ssh_public_key" {
 
 variable "ssh_private_key_file" {
   type    = string
-  default = env("PACKER_SSH_PRIVATE_KEY_FILE") != "" ? env("PACKER_SSH_PRIVATE_KEY_FILE") : env("PACKER_SSH_PRIVATE_KEY")
+  default = env("PACKER_SSH_PRIVATE_KEY")
 }
 
 variable "vm_interface" {
@@ -79,19 +79,24 @@ variable "vm_interface" {
 
 # ===== Proxmox connection =====
 variable "proxmox_url" {
-  type = string
+  type    = string
+  default = env("PROXMOX_URL")
 }
 
 variable "proxmox_username" {
-  type = string
+  type    = string
+  default = env("PROXMOX_USERNAME")
 }
 
 variable "proxmox_token" {
-  type = string
+  type      = string
+  sensitive = true
+  default   = env("PROXMOX_TOKEN")
 }
 
 variable "proxmox_node" {
-  type = string
+  type    = string
+  default = env("PROXMOX_NODE")
 }
 
 variable "proxmox_insecure_skip_tls_verify" {

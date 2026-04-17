@@ -66,7 +66,7 @@ source "proxmox-iso" "wazuh_stack" {
   http_content = {
     "/user-data" = templatefile("${path.root}/http/user-data.tpl", {
       hostname             = var.hostname
-      pub_key       = var.ssh_public_key
+      ssh_public_key       = var.ssh_public_key
       ubuntu_password_hash = var.ubuntu_password_hash
     })
     "/meta-data" = templatefile("${path.root}/http/meta-data.tpl", {
@@ -74,26 +74,33 @@ source "proxmox-iso" "wazuh_stack" {
     })
   }
 
+  http_bind_address = "0.0.0.0"
+  http_port_min     = 8902
+  http_port_max     = 8902
+
   # ===== QEMU guest agent for IP discovery =====
   qemu_agent = true
 
-  # ===== SSH (key-based, root) =====
+  # ===== SSH =====
   ssh_username         = var.ssh_username
+  ssh_password         = "ubuntu"
   ssh_private_key_file = var.ssh_private_key_file != "" ? var.ssh_private_key_file : null
-  ssh_timeout          = "60m"
+  ssh_timeout          = "2h"
 
   # plugin reads the IP address for this interface from qemu-guest-agent
   vm_interface         = var.vm_interface
 
   # ===== Ubuntu autoinstall boot command =====
-  # This sequence is often the flakiest part and may need small adjustments.
   boot_wait = "5s"
+  boot      = "c"
+  boot_key_interval = "50ms"
   boot_command = [
     "<esc><wait>",
-    "e<wait>",
-    "<down><down><down><end><wait>",
-    " autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ cloud-config-url=/dev/null ---<wait>",
-    "<f10><wait>"
+    "<esc><wait>",
+    "c<wait>",
+    "linux /casper/vmlinuz ip=dhcp autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ cloud-config-url=/dev/null ---<enter><wait>",
+    "initrd /casper/initrd<enter><wait>",
+    "boot<enter>"
   ]
 
   # ===== Proxmox Cloud-Init drive (kept for clones; optional) =====
