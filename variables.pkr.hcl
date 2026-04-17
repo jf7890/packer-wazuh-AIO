@@ -72,6 +72,11 @@ variable "ssh_private_key_file" {
   default = env("PACKER_SSH_PRIVATE_KEY")
 }
 
+variable "ssh_host" {
+  type    = string
+  default = env("PACKER_SSH_HOST")
+}
+
 variable "vm_interface" {
   type    = string
   default = "ens18"

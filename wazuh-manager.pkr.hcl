@@ -78,10 +78,12 @@ source "proxmox-iso" "wazuh_stack" {
   http_port_min     = 8902
   http_port_max     = 8902
 
-  # ===== QEMU guest agent for IP discovery =====
-  qemu_agent = true
+  # ===== SSH target discovery =====
+  # If PACKER_SSH_HOST is set, connect directly by IP and do not depend on qemu-guest-agent.
+  qemu_agent = var.ssh_host == ""
 
   # ===== SSH =====
+  ssh_host             = var.ssh_host != "" ? var.ssh_host : null
   ssh_username         = var.ssh_username
   ssh_password         = "ubuntu"
   ssh_private_key_file = var.ssh_private_key_file != "" ? var.ssh_private_key_file : null
