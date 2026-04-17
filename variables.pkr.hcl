@@ -36,9 +36,14 @@ variable "iso_storage_pool" {
   default = "hdd-data"
 }
 
-variable "iso_file" {
+variable "iso_url" {
   type    = string
-  default = "ubuntu-24.04.3-live-server-amd64.iso"
+  default = "https://releases.ubuntu.com/24.04/ubuntu-24.04.3-live-server-amd64.iso"
+}
+
+variable "iso_checksum" {
+  type    = string
+  default = "file:https://releases.ubuntu.com/24.04/SHA256SUMS"
 }
 
 variable "mgmt_bridge" {

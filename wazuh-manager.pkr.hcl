@@ -36,10 +36,14 @@ source "proxmox-iso" "wazuh_stack" {
   cores  = var.cpu_cores
   memory = var.memory_mb
 
-  # ===== Boot ISO (already uploaded to Proxmox storage) =====
+  # ===== Boot ISO (downloaded by Proxmox from the upstream URL) =====
   boot_iso {
-    iso_file  = "${var.iso_storage_pool}:iso/${var.iso_file}"
-    unmount   = true
+    type             = "scsi"
+    iso_url          = var.iso_url
+    iso_checksum     = var.iso_checksum
+    iso_storage_pool = var.iso_storage_pool
+    iso_download_pve = true
+    unmount          = true
   }
 
   # ===== Disk =====
